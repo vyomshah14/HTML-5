@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>2026 Future Vision</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Montserrat:wght@300;600&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(to right, #0f0c29, #302b63, #24243e);
+            font-family: 'Montserrat', sans-serif;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            pointer-events: none;
+            /* Let clicks pass through to canvas if needed */
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 7rem;
+            margin: 0;
+            background: -webkit-linear-gradient(#00c6ff, #0072ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 198, 255, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        p {
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            margin-top: 10px;
+            opacity: 0.8;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 20px rgba(0, 198, 255, 0.5), 0 0 10px rgba(0, 198, 255, 0.3);
+            }
+
+            to {
+                text-shadow: 0 0 30px rgba(0, 198, 255, 0.8), 0 0 20px rgba(0, 198, 255, 0.5);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="canvas"></canvas>
+
+    <div class="content">
+        <h1>2026</h1>
+        <p>THE FUTURE IS NOW</p>
+    </div>
+
+    <audio id="bgMusic" src="Koi Mil Gaya Om Om.mp3" loop autoplay></audio>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const bgMusic = document.getElementById('bgMusic');
+
+        // Autoplay Logic
+        window.addEventListener('load', () => {
+            bgMusic.volume = 0.5; // Set reasonable volume
+            bgMusic.play().catch(error => {
+                console.log("Autoplay blocked by browser. Waiting for interaction.");
+                // Add a one-time click listener to start music interaction
+                document.addEventListener('click', () => {
+                    bgMusic.play();
+                }, { once: true });
+            });
+        });
+
+        // ... (rest of the script)
+
+        let width, height;
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 1.5;
+                this.vy = (Math.random() - 0.5) * 1.5;
+                this.size = Math.random() * 2 + 1;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.fill();
+            }
+        }
+
+        function init() {
+            particles = [];
+            for (let i = 0; i < 100; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw connections
+            for (let i = 0; i < particles.length; i++) {
+                const p1 = particles[i];
+                p1.update();
+                p1.draw();
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
+                    const dx = p1.x - p2.x;
+                    const dy = p1.y - p2.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 150) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(0, 198, 255, ${1 - distance / 150})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        init();
+        animate();
+    </script>
+
+</body>
+
+</html>
